@@ -1,0 +1,27 @@
+# =========================
+# Unreal Engine
+# =========================
+
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+Content/
+
+# Ignore Visual Studio files
+.vs/
+*.sln
+*.VC.db
+*.opendb
+*.sdf
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# GitHub folder (optional)
+.github/
