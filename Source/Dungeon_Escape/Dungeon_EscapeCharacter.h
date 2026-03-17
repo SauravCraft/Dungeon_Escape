@@ -92,7 +92,7 @@ protected:
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	TArray<FString> Inventory;
+	TArray<FName> Inventory;
 	
 
 protected:

@@ -38,7 +38,7 @@ public:
 	UStaticMeshComponent* KeyItemMesh;
 
 	UPROPERTY(EditAnywhere)
-	FString KeyItemName;
+	FName KeyItemName;
 
 private:
 	bool IsKeyPlaced = false;

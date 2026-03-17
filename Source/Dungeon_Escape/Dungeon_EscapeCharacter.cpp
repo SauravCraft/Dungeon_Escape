@@ -126,66 +126,73 @@ void ADungeon_EscapeCharacter::DoJumpEnd()
 
 void ADungeon_EscapeCharacter::DoInteract()
 {
-
 	FVector Start = FirstPersonCameraComponent->GetComponentLocation();
 	FVector Direction = FirstPersonCameraComponent->GetForwardVector();
-	FVector End = Start + (Direction*MaxInteractionDistance);
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 5.0f);
+	FVector End = Start + (Direction * MaxInteractionDistance);
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f);
+
 	FCollisionShape InteractSphere = FCollisionShape::MakeSphere(InteractionSphereRadius);
-	DrawDebugSphere(GetWorld(), End, InteractionSphereRadius, 40.0f, FColor::Blue, false, 5.0f);
 
 	FHitResult HitResult;
-	bool IsInteract = GetWorld()->SweepSingleByChannel(
+	bool bHit = GetWorld()->SweepSingleByChannel(
 		HitResult,
-		Start,End,
-		FQuat::Identity, 
+		Start,
+		End,
+		FQuat::Identity,
 		ECC_GameTraceChannel2,
-		InteractSphere);
+		InteractSphere
+	);
+
+	if (!bHit)
+	{
+		UE_LOG(LogTemp, Display, TEXT("No Actor Detected"));
+		return;
+	}
 
 	AActor* HitActor = HitResult.GetActor();
+	if (!HitActor) return;
 
-	if (IsInteract) {
-		if (HitActor->ActorHasTag("Collectable")) {
-			ACollectableItem* Collectable = Cast<ACollectableItem>(HitActor);
-			Inventory.Add(Collectable->ItemName);
-			Collectable->Destroy();
-		}
-		else if (HitActor->ActorHasTag("LockItem")) {
-			ALock* LockNameIs = Cast<ALock>(HitActor);
+	// ================= COLLECTABLE =================
+	if (ACollectableItem* Collectable = Cast<ACollectableItem>(HitActor))
+	{
+		Inventory.Add(Collectable->ItemName);
 
-			if (LockNameIs) {
-				if (!LockNameIs->GetIsKeyPlaced()) {
-					int32 isItem = Inventory.RemoveSingle(LockNameIs->KeyItemName);
-					if (isItem) {
-						LockNameIs->SetIsKeyPlaced(true);
-					}
-					else {
-						UE_LOG(LogTemp, Display, TEXT("LockItem Not in Inventory"));
-					}
-				}
-				else {
-					UE_LOG(LogTemp, Display, TEXT("LockItem Is Present"));
-					Inventory.Add(LockNameIs->KeyItemName);
-					LockNameIs->SetIsKeyPlaced(false);
-					
-				}
+		UE_LOG(LogTemp, Display, TEXT("Picked: %s"), *Collectable->ItemName.ToString());
+
+		Collectable->Destroy();
+		return;
+	}
+
+	// ================= LOCK =================
+	if (ALock* Lock = Cast<ALock>(HitActor))
+	{
+		FName RequiredKey = Lock->KeyItemName;
+
+		if (!Lock->GetIsKeyPlaced())
+		{
+			if (Inventory.Contains(RequiredKey))
+			{
+				Inventory.RemoveSingle(RequiredKey);
+				Lock->SetIsKeyPlaced(true);
+
+				UE_LOG(LogTemp, Display, TEXT("Unlocked with: %s"), *RequiredKey.ToString());
 			}
-			
-			/*for (int32 i = 0; i < Inventory.Num(); i++) {
-				if ( Inventory[i] == LockNameIs->KeyItemName ) {
-					if (!LockNameIs->GetIsKeyPlaced()) {
-						LockNameIs->SetIsKeyPlaced(true);
-						Inventory.Remove(LockNameIs->KeyItemName);
-					}
-					 
-				}
-			}*/
-			
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Need key: %s"), *RequiredKey.ToString());
+			}
 		}
-	}
-	else {
-		UE_LOG(LogTemp, Display, TEXT("No Actor Detected"));
-	}
+		else
+		{
+			// Optional: take key back
+			Inventory.Add(RequiredKey);
+			Lock->SetIsKeyPlaced(false);
 
+			UE_LOG(LogTemp, Display, TEXT("Key removed: %s"), *RequiredKey.ToString());
+		}
+
+		return;
+	}
 }
 

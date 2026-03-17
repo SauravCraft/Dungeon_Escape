@@ -28,6 +28,9 @@ public:
 	FVector MoveOffset;
 
 	UPROPERTY(EditAnywhere)
+	FRotator RotateOffset = FRotator(0.0f, 90.0f, 0.0f); // Yaw = 90°
+	UPROPERTY(EditAnywhere)
+
 	float TimeMoved = 4.0f;
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -39,6 +42,7 @@ public:
 	bool ReachedTarget = false;
 
 	FVector StartingLocation;
+	FRotator StartingRotation;
 	FVector TargetLocation;
 
 };

@@ -22,7 +22,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	UPROPERTY(EditAnyWhere)
-	FString ItemName;
+	UPROPERTY(EditAnywhere)
+	FName ItemName;
 
 };
